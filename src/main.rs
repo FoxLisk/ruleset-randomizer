@@ -1,3 +1,6 @@
+mod rules;
+mod techniques;
+
 use rocket::{Rocket, Build, Request};
 use rocket_dyn_templates::Template;
 use std::path::{PathBuf, Path};
@@ -65,3 +68,4 @@ async fn main() {
     let ignited = rocket.ignite().await.unwrap();
     ignited.launch().await;
 }
+
