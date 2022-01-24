@@ -6,7 +6,9 @@ use rocket_dyn_templates::Template;
 use std::path::{PathBuf, Path};
 use rocket::fs::NamedFile;
 use rocket::request::{FromRequest, Outcome};
-use rocket::{get, launch};
+use rocket::{get};
+use serde_yaml;
+use crate::rules::InputWeights;
 
 
 const STATIC_SUFFIXES: [&str; 7] = [&"js", &"css", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
@@ -34,7 +36,7 @@ impl<'r> FromRequest<'r> for StaticAsset {
 
 #[get("/<file..>")]
 async fn statics(file: PathBuf, _asset: StaticAsset) -> Option<NamedFile> {
-    let mut p = Path::new("static/").join(file);
+    let p = Path::new("static/").join(file);
     if !p.exists() {
         println!("{:?} does not exist", p);
         return None;
@@ -63,9 +65,17 @@ fn build_rocket(
 #[rocket::main]
 async fn main() {
     println!("Hello, world!");
+    let mut t = InputWeights {
+        name: "hi".to_string(),
+        defaults: "NMGRules".to_string(),
+        weights: Default::default()
+    };
+
+    t.weights.insert("FakeFlippers".to_string(), "false".to_string());
+    println!("{}", serde_yaml::to_string(&t).unwrap());
 
     let rocket = build_rocket();
     let ignited = rocket.ignite().await.unwrap();
-    ignited.launch().await;
+    ignited.launch().await.unwrap();
 }
 

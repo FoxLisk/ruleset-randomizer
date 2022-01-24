@@ -1,0 +1,43 @@
+#![allow(non_snake_case)]
+
+use crate::rules::{IsAllowed, TemplateState};
+use rand::Rng;
+
+pub(crate) struct Ruleset {
+    {% for technique in techniques %}
+    pub(crate) {{ technique }}: IsAllowed,
+    {% endfor %}
+}
+
+
+pub(crate) struct RulesetTemplate {
+    {% for technique in techniques %}
+    pub(crate) {{ technique }}: TemplateState,
+    {% endfor %}
+}
+
+impl RulesetTemplate {
+    fn apply_rule(&self, default: &IsAllowed, rule: &TemplateState) -> IsAllowed {
+        match rule {
+            TemplateState::STATIC(i) => i.clone(),
+            TemplateState::PERCENT(p) => {
+                let roll = {
+                    rand::thread_rng().gen_range(0u16..100)
+                };
+                if *p < roll {
+                    IsAllowed::ALLOWED
+                } else {
+                    default.clone()
+                }
+            }
+        }
+    }
+
+    pub(crate) fn apply(&self, defaults: Ruleset) -> Ruleset {
+        Ruleset {
+            {% for technique in techniques %}
+            {{ technique }}: self.apply_rule(&defaults.{{ technique }}, &self.{{ technique }}),
+            {% endfor %}
+        }
+    }
+}

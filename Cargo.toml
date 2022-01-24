@@ -8,3 +8,13 @@ edition = "2018"
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
 rocket_dyn_templates = { version = "0.1.0-rc.1", features = ["tera"] }
 rand = "0.8"
+serde = "1.0"
+serde_yaml = "0.8"
+regex = "1"
+lazy_static = "1.4.0"
+
+custom_error = "1.9"
+
+[build-dependencies.tera]
+version = "1"
+default-features = false
