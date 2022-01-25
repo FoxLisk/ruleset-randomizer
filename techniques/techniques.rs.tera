@@ -3,6 +3,14 @@
 use crate::rules::{IsAllowed, TemplateState};
 use rand::Rng;
 
+pub const TECHNIQUE_NAMES: [&str; {{ techniques | length }}] = [
+    {% for technique in techniques %}
+    "{{ technique }}",
+
+    {% endfor %}
+];
+
+#[derive(Debug)]
 pub(crate) struct Ruleset {
     {% for technique in techniques %}
     pub(crate) {{ technique }}: IsAllowed,

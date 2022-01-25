@@ -15,6 +15,7 @@ fn main () {
         Ok(_) => {},
         Err(e) => {
             println!("cargo:warning={}", e);
+            std::process::exit(1);
         }
     }
 
