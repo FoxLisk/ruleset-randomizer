@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use rand::{SeedableRng, RngCore, Rng};
+use std::sync::Arc;
 
 lazy_static! {
     static ref PERCENT_WEIGHT_PATTERN: Regex = Regex::new("(\\d+)%?").unwrap();
@@ -70,6 +72,7 @@ impl TemplateState {
     }
 }
 
+
 #[derive(Serialize, Deserialize)]
 pub(crate) struct InputWeights {
     pub(crate) name: String,
@@ -88,6 +91,7 @@ custom_error! {
    #[derive(PartialEq)]
    pub(crate) UserInputError { err: String } = "{err}"
 }
+
 
 /*
 Take user inputs (from yaml, probably). For each key that's a valid technique name,
@@ -167,6 +171,9 @@ mod test {
     use super::TemplateState;
     use crate::rules::{find_default, IsAllowed, NMGRules, UserInputError, parse_weights, InputWeights, munge_user_input, MungedInputWeights, parse_user_input};
     use std::collections::HashMap;
+    use crate::techniques::{RulesetTemplate, Ruleset};
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
 
     #[test]
     fn test_parsing_template_state() {
@@ -299,6 +306,61 @@ weights:
         assert_eq!("hello", p.name);
         assert_eq!(TemplateState::PERCENT(40), *p.weights.get("OverworldClipping").unwrap());
 
+    }
+
+    #[test]
+    fn test_template_from_weights() {
+        let mut weights: HashMap<String, TemplateState> = Default::default();
+        weights.insert("OverworldClipping".to_string(), TemplateState::STATIC(IsAllowed::ALLOWED));
+        let rt = RulesetTemplate::from_template_states(&weights);
+        assert_eq!(TemplateState::STATIC(IsAllowed::ALLOWED), rt.OverworldClipping);
+        assert_eq!(TemplateState::USE_DEFAULT, rt.FakeFlippers);
+    }
+
+    // N.B. These will probably break when the order of techniques changes; this is mostly just
+    // to prove to myself that seeding RNG works and that I can spell it right, etc.
+    #[test]
+    fn test_apply_rule_with_rng() {
+        let rt = RulesetTemplate {
+            FakeFlippers: TemplateState::PERCENT(50),
+            OverworldClipping: TemplateState::USE_DEFAULT,
+        };
+
+        let mut rng = SmallRng::seed_from_u64(1);
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng));
+
+
+        let mut rng2 = SmallRng::seed_from_u64(2);
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng2));
+
+        let mut rng3 = SmallRng::seed_from_u64(3);
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng3));
+
+
+        let mut rng4 = SmallRng::seed_from_u64(4);
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng4));
+
+        let mut rng5 = SmallRng::seed_from_u64(500);
+        assert_eq!(IsAllowed::ALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng5));
+    }
+
+
+    #[test]
+    fn test_apply_with_rng() {
+        let rt = RulesetTemplate {
+            FakeFlippers: TemplateState::PERCENT(50),
+            OverworldClipping: TemplateState::USE_DEFAULT,
+        };
+
+        let defaults = Ruleset {
+            FakeFlippers: IsAllowed::ALLOWED,
+            OverworldClipping: IsAllowed::DISALLOWED,
+        };
+
+        let mut rng = SmallRng::seed_from_u64(1);
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_with_rng(&defaults, &mut rng).FakeFlippers);
+        let mut rng2 = SmallRng::seed_from_u64(500);
+        assert_eq!(IsAllowed::ALLOWED, rt.apply_with_rng(&defaults, &mut rng).FakeFlippers);
     }
 }
 

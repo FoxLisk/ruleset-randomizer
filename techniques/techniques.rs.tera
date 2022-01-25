@@ -2,6 +2,7 @@
 
 use crate::rules::{IsAllowed, TemplateState};
 use rand::Rng;
+use std::collections::HashMap;
 
 pub const TECHNIQUE_NAMES: [&str; {{ techniques | length }}] = [
     {% for technique in techniques %}
@@ -25,6 +26,40 @@ pub(crate) struct RulesetTemplate {
 }
 
 impl RulesetTemplate {
+
+    pub(crate) fn from_template_states(weights: &HashMap<String, TemplateState>) -> Self {
+        Self {
+        {% for technique in techniques %}
+            {{ technique }}: weights.get("{{ technique }}").map_or(TemplateState::USE_DEFAULT, |t| t.clone()),
+        {% endfor %}
+        }
+    }
+
+    pub(crate) fn apply_rule_with_rng<R: Rng>(&self, default: &IsAllowed, rule: &TemplateState, mut rng: &mut R) -> IsAllowed {
+        match rule {
+            TemplateState::STATIC(i) => i.clone(),
+            TemplateState::PERCENT(p) => {
+
+                let roll = rng.gen_ratio(*p as u32, 100);
+                if roll {
+                    IsAllowed::ALLOWED
+                } else {
+                    IsAllowed::DISALLOWED
+                }
+            },
+            TemplateState::USE_DEFAULT => default.clone(),
+        }
+    }
+
+    pub(crate) fn apply_with_rng<R: Rng>(&self, defaults: &Ruleset, mut rng: &mut R) -> Ruleset {
+        Ruleset {
+            {% for technique in techniques %}
+            {{ technique }}: self.apply_rule_with_rng(&defaults.{{ technique }}, &self.{{ technique }}, &mut rng),
+            {% endfor %}
+        }
+    }
+
+{#
     fn apply_rule(&self, default: &IsAllowed, rule: &TemplateState) -> IsAllowed {
         match rule {
             TemplateState::STATIC(i) => i.clone(),
@@ -37,15 +72,18 @@ impl RulesetTemplate {
                 } else {
                     default.clone()
                 }
-            }
+            },
+            TemplateState::USE_DEFAULT => default.clone(),
         }
     }
 
-    pub(crate) fn apply(&self, defaults: Ruleset) -> Ruleset {
+    pub(crate) fn apply(&self, defaults: &Ruleset) -> Ruleset {
         Ruleset {
             {% for technique in techniques %}
             {{ technique }}: self.apply_rule(&defaults.{{ technique }}, &self.{{ technique }}),
             {% endfor %}
         }
     }
+#}
+
 }
