@@ -4,14 +4,22 @@ mod techniques;
 use rocket::{Rocket, Build, Request};
 use rocket_dyn_templates::Template;
 use std::path::{PathBuf, Path};
-use rocket::fs::NamedFile;
+use rocket::fs::{NamedFile, TempFile};
 use rocket::request::{FromRequest, Outcome};
-use rocket::{get};
+use rocket::{get, post};
 use serde_yaml;
 use crate::rules::InputWeights;
+use std::fs::read_to_string;
+use rocket::form::{Form, FromForm};
+use serde::Serialize;
 
 
 const STATIC_SUFFIXES: [&str; 7] = [&"js", &"css", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
+
+#[derive(Serialize)]
+struct EmptyContext {}
+
+const EMPTY_CONTEXT: EmptyContext = EmptyContext {};
 
 struct StaticAsset {}
 
@@ -44,6 +52,33 @@ async fn statics(file: PathBuf, _asset: StaticAsset) -> Option<NamedFile> {
     NamedFile::open(p).await.ok()
 }
 
+#[get("/upload")]
+async fn upload_form() -> Template {
+    Template::render("submit_weights", EMPTY_CONTEXT)
+}
+
+
+#[derive(FromForm)]
+struct Upload<'f> {
+    upload: TempFile<'f>
+}
+
+#[post("/upload", data = "<form>")]
+async fn upload(mut form: Form<Upload<'_>>)  {
+    println!("{:?}", form.upload);
+    let c = match &form.upload {
+        TempFile::File { path, .. } => {
+
+            read_to_string(path).unwrap()
+        }
+        TempFile::Buffered { content } => {
+            content.to_string()
+        }
+    };
+    // form.upload.persist_to("uploads/blah").await;
+    println!("Uploaded file contents: {}", c);
+}
+
 
 #[get("/world")]
 fn hello() -> String {
@@ -55,7 +90,7 @@ fn build_rocket(
     rocket::build()
         .mount(
             "/",
-            rocket::routes![hello],
+            rocket::routes![hello, upload_form, upload],
         )
         .mount("/static", rocket::routes![statics])
         .attach(Template::fairing())

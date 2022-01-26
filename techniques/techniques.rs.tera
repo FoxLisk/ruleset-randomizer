@@ -35,7 +35,7 @@ impl RulesetTemplate {
         }
     }
 
-    pub(crate) fn apply_rule_with_rng<R: Rng>(&self, default: &IsAllowed, rule: &TemplateState, mut rng: &mut R) -> IsAllowed {
+    pub(crate) fn apply_rule_with_rng<R: Rng>(&self, default: &IsAllowed, rule: &TemplateState, rng: &mut R) -> IsAllowed {
         match rule {
             TemplateState::STATIC(i) => i.clone(),
             TemplateState::PERCENT(p) => {

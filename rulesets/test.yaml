@@ -1,0 +1,5 @@
+name: hello
+defaults: NMGRules
+weights:
+  OverworldClipping: 40%
+  unused: unused

@@ -1,4 +1,4 @@
 [default]
 template_dir = "templates"
-log_level = "critical"
+#log_level = "critical"
 port = 8001
