@@ -17,7 +17,7 @@ static NMGRules: Ruleset = Ruleset {
     OverworldClipping: IsAllowed::DISALLOWED,
 };
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Serialize)]
 pub(crate) enum IsAllowed {
     ALLOWED,
     DISALLOWED,

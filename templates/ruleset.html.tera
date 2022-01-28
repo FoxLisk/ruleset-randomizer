@@ -1,0 +1,18 @@
+{% extends "base" %}
+
+{% block body_content %}
+
+<div id="ruleset">
+ {% for key, value in ruleset %}
+     <div class="flex flex-row">
+        <div class="basis-1/2">
+            {{ key }}
+        </div>
+        <div class="basis-1/2">
+            {{ value }}
+        </div>
+    </div>
+        {% endfor %}
+
+</div>
+{% endblock %}

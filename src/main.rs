@@ -8,10 +8,11 @@ use rocket::fs::{NamedFile, TempFile};
 use rocket::request::{FromRequest, Outcome};
 use rocket::{get, post};
 use serde_yaml;
-use crate::rules::InputWeights;
+use crate::rules::{InputWeights, IsAllowed};
 use std::fs::read_to_string;
 use rocket::form::{Form, FromForm};
 use serde::Serialize;
+use crate::techniques::Ruleset;
 
 
 const STATIC_SUFFIXES: [&str; 7] = [&"js", &"css", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
@@ -57,6 +58,23 @@ async fn upload_form() -> Template {
     Template::render("submit_weights", EMPTY_CONTEXT)
 }
 
+#[derive(Serialize)]
+struct RulesetContext<'a> {
+    ruleset: &'a Ruleset,
+}
+
+#[get("/ruleset")]
+async fn show_ruleset() -> Template {
+    let r = Ruleset {
+        FakeFlippers: IsAllowed::ALLOWED,
+        OverworldClipping: IsAllowed::DISALLOWED,
+    };
+    let rc = RulesetContext {
+        ruleset: &r,
+    };
+    Template::render("ruleset", rc)
+}
+
 
 #[derive(FromForm)]
 struct Upload<'f> {
@@ -90,7 +108,7 @@ fn build_rocket(
     rocket::build()
         .mount(
             "/",
-            rocket::routes![hello, upload_form, upload],
+            rocket::routes![hello, upload_form, upload, show_ruleset],
         )
         .mount("/static", rocket::routes![statics])
         .attach(Template::fairing())

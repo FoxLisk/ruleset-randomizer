@@ -1,6 +1,6 @@
-<html>
-<head></head>
-<body>
+{% extends "base" %}
+
+{% block body_content %}
 <div>
     <form action="/upload", method="post" enctype="multipart/form-data">
         <input name="upload" type="file"></input>
@@ -8,5 +8,4 @@
     </form>
 </div>
 
-</body>
-</html>
+{% endblock %}

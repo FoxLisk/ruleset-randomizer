@@ -3,6 +3,7 @@
 use crate::rules::{IsAllowed, TemplateState};
 use rand::Rng;
 use std::collections::HashMap;
+use serde::Serialize;
 
 pub const TECHNIQUE_NAMES: [&str; {{ techniques | length }}] = [
     {% for technique in techniques %}
@@ -11,7 +12,7 @@ pub const TECHNIQUE_NAMES: [&str; {{ techniques | length }}] = [
     {% endfor %}
 ];
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Ruleset {
     {% for technique in techniques %}
     pub(crate) {{ technique }}: IsAllowed,
