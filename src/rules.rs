@@ -12,9 +12,18 @@ lazy_static! {
 }
 
 #[allow(non_upper_case_globals)]
-static NMGRules: Ruleset = Ruleset {
+pub(crate) static NMGRules: Ruleset = Ruleset {
+    SaveAndQuit: IsAllowed::DISALLOWED,
     FakeFlippers: IsAllowed::ALLOWED,
+    BombJump: IsAllowed::ALLOWED,
+    ItemDash: IsAllowed::ALLOWED,
+    SpookyAction: IsAllowed::ALLOWED,
     OverworldClipping: IsAllowed::DISALLOWED,
+    OverworldMirrorWrap: IsAllowed::DISALLOWED,
+    OverworldYBA: IsAllowed::DISALLOWED,
+    SuperSpeed: IsAllowed::ALLOWED,
+    OverworldEG: IsAllowed::DISALLOWED,
+    Misslotting: IsAllowed::DISALLOWED
 };
 
 #[derive(Copy, Clone, PartialEq, Debug, Serialize)]

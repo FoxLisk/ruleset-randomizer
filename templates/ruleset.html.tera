@@ -1,7 +1,3 @@
-{% extends "base" %}
-
-{% block body_content %}
-
 <div id="ruleset">
  {% for key, value in ruleset %}
      <div class="flex flex-row">
@@ -15,4 +11,3 @@
         {% endfor %}
 
 </div>
-{% endblock %}
