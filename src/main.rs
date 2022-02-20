@@ -12,7 +12,7 @@ use crate::rules::{InputWeights, IsAllowed, NMGRules, TemplateState};
 use std::fs::read_to_string;
 use rocket::form::{Form, FromForm};
 use serde::Serialize;
-use crate::techniques::{Ruleset, RulesetTemplate};
+use crate::techniques::{Ruleset, RulesetTemplate, TECHNIQUE_NAMES};
 use rand::rngs::SmallRng;
 use chrono::{DateTime, Offset, TimeZone, Datelike, Date, Weekday, Month};
 use rand::SeedableRng;
@@ -96,6 +96,7 @@ fn most_recent_sunday<tz: TimeZone>(mut d: Date<tz>) -> Date<tz> {
 struct WeeklyRuleset<'a> {
     week_of: String,
     ruleset: &'a Ruleset,
+    technique_names: &'static [&'static str]
 }
 
 #[get("/weekly")]
@@ -124,6 +125,7 @@ async fn weekly() -> Template {
     let rc = WeeklyRuleset {
         week_of: format!("{}, {} {}, {}", last_sunday.weekday(),month_from_u32(last_sunday.month()).name(), last_sunday.day(), last_sunday.year()),
         ruleset: &r,
+        technique_names: &TECHNIQUE_NAMES,
     };
 
     Template::render("weekly_ruleset", rc)

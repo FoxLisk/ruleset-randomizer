@@ -1,13 +1,15 @@
-<div id="ruleset">
- {% for key, value in ruleset %}
-     <div class="flex flex-row">
-        <div class="basis-1/2">
-            {{ key }}
+<div>
+    <div id="ruleset">
+     {% for name in technique_names %}
+         <div class="flex flex-row border-t-2 {% if ruleset[name] == "ALLOWED" %} bg-teal-300 {% else %} bg-red-300 {% endif %}">
+            <div class="basis-1/2">
+                {{ name }}
+            </div>
+            <div class="basis-1/2">
+                {{ ruleset[name] }}
+            </div>
         </div>
-        <div class="basis-1/2">
-            {{ value }}
-        </div>
-    </div>
-        {% endfor %}
+            {% endfor %}
 
+    </div>
 </div>
