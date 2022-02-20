@@ -1,9 +1,22 @@
 {% extends "base" %}
 
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript" src="static/ruleset.js"></script>
+{% endblock %}
+
 {% block body_content %}
 <div class="container mx-auto w-2/5">
-  Ruleset for the week of {{ week_of }}
+    <div class="text-2xl mx-auto text-center">
 
-{% include "ruleset" %}
+            <p>
+              Ruleset for the week of
+            </p>
+            <p>
+             {{ week_of }}
+            </p>
+
+    </div>
+    {% include "ruleset" %}
 </div>
 {% endblock %}

@@ -1,5 +1,6 @@
 <div>
     <div id="ruleset">
+    <button id="nmg-comparison" type="button" class="rounded-full bg-violet-400 hover:bg-violet-600 px-2">Show delta from NMG</button>
      {% for name in technique_names %}
          <div class="flex flex-row border-t-2 {% if ruleset[name] == "ALLOWED" %} bg-teal-300 {% else %} bg-red-300 {% endif %}">
             <div class="basis-1/2">
