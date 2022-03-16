@@ -2,3 +2,5 @@
 src/techniques.rs
 uploads/*
 rulesets/10mb
+node_modules/*
+static/index.css

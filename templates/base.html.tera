@@ -3,7 +3,10 @@
     <title>
         {% block pagename %}{% endblock%} | Ruleset Randomizer
     </title>
+    {#
     <script src="https://cdn.tailwindcss.com"></script>
+    #}
+    <link href="/static/index.css" rel="stylesheet">
     {% block scripts %}
     {% endblock %}
 </head>

@@ -1,7 +1,7 @@
 use std::fs::{File, read_to_string};
 use tera::{Tera, Context};
 
-// TODO: this should probably use a template
+
 fn main () {
     println!("cargo:rerun-if-changed=techniques");
     let cont = read_to_string("techniques/techniques").unwrap();
@@ -26,7 +26,4 @@ fn main () {
             std::process::exit(1);
         }
     }
-
-
-
 }
