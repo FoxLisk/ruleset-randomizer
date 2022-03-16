@@ -1,0 +1,11 @@
+[Unit]
+Description=RulesetRandomizer
+
+[Service]
+StandardOutput="/var/log/ruleset-randomizer.log"
+StandardError="/var/log/ruleset-randomizer.log"
+WorkingDirectory=/opt/ruleset-randomizer
+ExecStart=/opt/ruleset-randomizer/target/debug/ruleset-randomizer
+
+[Install]
+WantedBy=multi-user.target
