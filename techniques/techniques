@@ -1,14 +1,23 @@
 SaveAndQuit
+BombJump
+SpookyAction
 
 SuperSpeed
 FakeFlippers
-BombJump
 ItemDash
-SpookyAction
+
+HeraPot
+HookShopping
 
 OverworldEG
 OverworldClipping
 OverworldMirrorWrap
 OverworldYBA
+OverworldSwimmyG
 
+UnderworldClipping
+
+TransitionCorruption
 Misslotting
+
+LayerDisparity

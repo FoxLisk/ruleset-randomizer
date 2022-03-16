@@ -12,8 +12,9 @@ pub const TECHNIQUE_NAMES: [&str; {{ techniques | length }}] = [
     {% endfor %}
 ];
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub(crate) struct Ruleset {
+    pub(crate) name: String,
     {% for technique in techniques %}
     pub(crate) {{ technique }}: IsAllowed,
     {% endfor %}
@@ -54,6 +55,7 @@ impl RulesetTemplate {
 
     pub(crate) fn apply_with_rng<R: Rng>(&self, defaults: &Ruleset, mut rng: &mut R) -> Ruleset {
         Ruleset {
+            name: defaults.name.clone(),
             {% for technique in techniques %}
             {{ technique }}: self.apply_rule_with_rng(&defaults.{{ technique }}, &self.{{ technique }}, &mut rng),
             {% endfor %}
@@ -80,6 +82,7 @@ impl RulesetTemplate {
 
     pub(crate) fn apply(&self, defaults: &Ruleset) -> Ruleset {
         Ruleset {
+            name: defaults.name.clone(),
             {% for technique in techniques %}
             {{ technique }}: self.apply_rule(&defaults.{{ technique }}, &self.{{ technique }}),
             {% endfor %}

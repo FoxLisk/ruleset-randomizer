@@ -8,7 +8,7 @@ use rocket::fs::{NamedFile, TempFile};
 use rocket::request::{FromRequest, Outcome};
 use rocket::{get, post};
 use serde_yaml;
-use crate::rules::{InputWeights, IsAllowed, NMGRules, TemplateState};
+use crate::rules::{InputWeights, IsAllowed, NMGRules, RMGRules, NoEGRules, MGRules, TemplateState};
 use std::fs::read_to_string;
 use rocket::form::{Form, FromForm};
 use serde::Serialize;
@@ -16,6 +16,8 @@ use crate::techniques::{Ruleset, RulesetTemplate, TECHNIQUE_NAMES};
 use rand::rngs::SmallRng;
 use chrono::{DateTime, Offset, TimeZone, Datelike, Date, Weekday, Month};
 use rand::SeedableRng;
+use rocket::response::Redirect;
+use rocket::serde::json::Json;
 
 fn month_from_u32(w: u32) -> Month {
     match w {
@@ -36,7 +38,7 @@ fn month_from_u32(w: u32) -> Month {
 }
 
 
-const STATIC_SUFFIXES: [&str; 7] = [&"js", &"css", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
+const STATIC_SUFFIXES: [&str; 8] = [&"js", &"css", &"png", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
 
 #[derive(Serialize)]
 struct EmptyContext {}
@@ -79,11 +81,15 @@ async fn upload_form() -> Template {
     Template::render("submit_weights", EMPTY_CONTEXT)
 }
 
+#[get("/")]
+async fn root() -> Redirect {
+    Redirect::to(rocket::uri!(weekly))
+}
+
 #[derive(Serialize)]
 struct RulesetContext<'a> {
     ruleset: &'a Ruleset,
 }
-
 
 fn most_recent_sunday<tz: TimeZone>(mut d: Date<tz>) -> Date<tz> {
     while d.weekday() != chrono::Weekday::Sun {
@@ -96,34 +102,47 @@ fn most_recent_sunday<tz: TimeZone>(mut d: Date<tz>) -> Date<tz> {
 struct WeeklyRuleset<'a> {
     week_of: String,
     ruleset: &'a Ruleset,
-    technique_names: &'static [&'static str]
+    technique_names: &'static [&'static str],
 }
 
-#[get("/weekly")]
-async fn weekly() -> Template {
-
+fn get_weekly_ruleset() -> Ruleset {
     let rt = RulesetTemplate {
         SaveAndQuit: TemplateState::PERCENT(20),
         FakeFlippers: TemplateState::PERCENT(95),
         BombJump: TemplateState::PERCENT(95),
         ItemDash: TemplateState::PERCENT(95),
         SpookyAction: TemplateState::STATIC(IsAllowed::ALLOWED),
+        HeraPot: TemplateState::PERCENT(20),
         OverworldClipping: TemplateState::PERCENT(10),
         OverworldMirrorWrap: TemplateState::PERCENT(10),
         OverworldYBA: TemplateState::PERCENT(10),
         SuperSpeed: TemplateState::PERCENT(95),
         OverworldEG: TemplateState::PERCENT(5),
         Misslotting: TemplateState::PERCENT(5),
+        HookShopping: TemplateState::PERCENT(10),
+        LayerDisparity: TemplateState::STATIC(IsAllowed::DISALLOWED),
+        OverworldSwimmyG: TemplateState::PERCENT(10),
+        TransitionCorruption: TemplateState::PERCENT(3),
+        UnderworldClipping: TemplateState::PERCENT(5),
+
     };
     let now = chrono::offset::Utc::now();
     let last_sunday = most_recent_sunday(now.date());
 
+    let mut rng = SmallRng::seed_from_u64(1 + last_sunday.num_days_from_ce() as u64);
+    let mut r =rt.apply_with_rng(&NMGRules, &mut rng);
+    r.name = "Weekly".to_string();
+    r
+}
 
-    let mut rng = SmallRng::seed_from_u64(last_sunday.num_days_from_ce() as u64);
-    let r = rt.apply_with_rng(&NMGRules, &mut rng);
+#[get("/weekly")]
+async fn weekly() -> Template {
 
+    let now = chrono::offset::Utc::now();
+    let last_sunday = most_recent_sunday(now.date());
+    let r = get_weekly_ruleset();
     let rc = WeeklyRuleset {
-        week_of: format!("{}, {} {}, {}", last_sunday.weekday(),month_from_u32(last_sunday.month()).name(), last_sunday.day(), last_sunday.year()),
+        week_of: format!("{} {}, {}", month_from_u32(last_sunday.month()).name(), last_sunday.day(), last_sunday.year()),
         ruleset: &r,
         technique_names: &TECHNIQUE_NAMES,
     };
@@ -153,6 +172,11 @@ async fn upload(mut form: Form<Upload<'_>>)  {
     println!("Uploaded file contents: {}", c);
 }
 
+#[get("/comparisons")]
+async fn comparisons() -> Json<Vec<Ruleset>> {
+    Json(vec!(NMGRules.clone(), RMGRules.clone(), NoEGRules.clone(), MGRules.clone(), get_weekly_ruleset()))
+
+}
 
 #[get("/world")]
 fn hello() -> String {
@@ -164,7 +188,7 @@ fn build_rocket(
     rocket::build()
         .mount(
             "/",
-            rocket::routes![hello, upload_form, upload, weekly],
+            rocket::routes![hello, upload_form, upload, weekly, root, comparisons],
         )
         .mount("/static", rocket::routes![statics])
         .attach(Template::fairing())

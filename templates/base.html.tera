@@ -1,10 +1,13 @@
 <html>
 <head>
+    <title>
+        {% block pagename %}{% endblock%} | Ruleset Randomizer
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     {% block scripts %}
     {% endblock %}
 </head>
-<body>
+<body class="bg-sky-200">
 <div>
 <nav class="bg-gray-800">
   <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -23,25 +26,22 @@
       </div>
     </div>
   </div>
-
-  <!-- Mobile menu, show/hide based on menu state. -->
-  <div class="sm:hidden" id="mobile-menu">
-    <div class="px-2 pt-2 pb-3 space-y-1">
-      <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-      <a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Dashboard</a>
-
-      <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Team</a>
-
-      <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Projects</a>
-
-      <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Calendar</a>
-    </div>
-  </div>
 </nav>
 </div>
-<div class="bg-sky-200">
+<div>
 {% block body_content %}
 {% endblock %}
+</div>
+<div class="bg-gray-800 fixed w-full bottom-0 h-8 max-h-8">
+    <div class="container flex flex-row justify-between w-2/3 mx-auto text-slate-300 h-full">
+        <div class="flex h-full max-h-full max-w-full">
+          <img
+            src="/static/discord_logo.png"
+            alt="Discord logo"
+            class="object-contain max-h-full w-auto pr-1" />
+          FoxLisk#5436
+         </div>
+    </div>
 </div>
 </body>
 </html>

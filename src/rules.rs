@@ -4,32 +4,107 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use rand::{SeedableRng, RngCore, Rng};
-use std::sync::Arc;
+// use rand::{SeedableRng, RngCore, Rng};
 
 lazy_static! {
     static ref PERCENT_WEIGHT_PATTERN: Regex = Regex::new("(\\d+)%?").unwrap();
+
+    #[allow(non_upper_case_globals)]
+    pub(crate) static ref NMGRules: Ruleset = Ruleset {
+        name: "NMG".to_owned(),
+        SaveAndQuit: IsAllowed::DISALLOWED,
+        FakeFlippers: IsAllowed::ALLOWED,
+        BombJump: IsAllowed::ALLOWED,
+        ItemDash: IsAllowed::ALLOWED,
+        SpookyAction: IsAllowed::ALLOWED,
+        OverworldClipping: IsAllowed::DISALLOWED,
+        OverworldMirrorWrap: IsAllowed::DISALLOWED,
+        OverworldYBA: IsAllowed::DISALLOWED,
+        SuperSpeed: IsAllowed::ALLOWED,
+        OverworldEG: IsAllowed::DISALLOWED,
+        Misslotting: IsAllowed::DISALLOWED,
+        HeraPot: IsAllowed::UNSPECIFIED,
+        HookShopping: IsAllowed::DISALLOWED,
+        LayerDisparity: IsAllowed::DISALLOWED,
+        OverworldSwimmyG: IsAllowed::DISALLOWED,
+        TransitionCorruption: IsAllowed::DISALLOWED,
+        UnderworldClipping: IsAllowed::DISALLOWED,
+    };
+
+    #[allow(non_upper_case_globals)]
+    pub(crate) static ref RMGRules: Ruleset = Ruleset {
+        name: "RMG".to_owned(),
+        SaveAndQuit: IsAllowed::ALLOWED,
+        FakeFlippers: IsAllowed::ALLOWED,
+        BombJump: IsAllowed::ALLOWED,
+        ItemDash: IsAllowed::ALLOWED,
+        SpookyAction: IsAllowed::ALLOWED,
+        OverworldClipping: IsAllowed::ALLOWED,
+        OverworldMirrorWrap: IsAllowed::ALLOWED,
+        OverworldYBA: IsAllowed::ALLOWED,
+        SuperSpeed: IsAllowed::ALLOWED,
+        OverworldEG: IsAllowed::ALLOWED,
+        Misslotting: IsAllowed::DISALLOWED,
+        HeraPot: IsAllowed::ALLOWED,
+        HookShopping: IsAllowed::UNSPECIFIED,
+        LayerDisparity: IsAllowed::DISALLOWED,
+        OverworldSwimmyG: IsAllowed::UNSPECIFIED,
+        TransitionCorruption: IsAllowed::DISALLOWED,
+        UnderworldClipping: IsAllowed::ALLOWED,
+    };
+
+    #[allow(non_upper_case_globals)]
+    pub(crate) static ref NoEGRules: Ruleset = Ruleset {
+        name: "No EG".to_owned(),
+        SaveAndQuit: IsAllowed::ALLOWED,
+        FakeFlippers: IsAllowed::ALLOWED,
+        BombJump: IsAllowed::ALLOWED,
+        ItemDash: IsAllowed::ALLOWED,
+        SpookyAction: IsAllowed::ALLOWED,
+        OverworldClipping: IsAllowed::ALLOWED,
+        OverworldMirrorWrap: IsAllowed::ALLOWED,
+        OverworldYBA: IsAllowed::ALLOWED,
+        SuperSpeed: IsAllowed::ALLOWED,
+        OverworldEG: IsAllowed::ALLOWED,
+        Misslotting: IsAllowed::ALLOWED,
+        HeraPot: IsAllowed::ALLOWED,
+        HookShopping: IsAllowed::ALLOWED,
+        LayerDisparity: IsAllowed::DISALLOWED,
+        OverworldSwimmyG: IsAllowed::UNSPECIFIED,
+        TransitionCorruption: IsAllowed::DISALLOWED,
+        UnderworldClipping: IsAllowed::ALLOWED,
+    };
+
+
+    #[allow(non_upper_case_globals)]
+    pub(crate) static ref MGRules: Ruleset = Ruleset {
+        name: "MG".to_owned(),
+        SaveAndQuit: IsAllowed::ALLOWED,
+        FakeFlippers: IsAllowed::ALLOWED,
+        BombJump: IsAllowed::ALLOWED,
+        ItemDash: IsAllowed::ALLOWED,
+        SpookyAction: IsAllowed::ALLOWED,
+        OverworldClipping: IsAllowed::ALLOWED,
+        OverworldMirrorWrap: IsAllowed::ALLOWED,
+        OverworldYBA: IsAllowed::ALLOWED,
+        SuperSpeed: IsAllowed::ALLOWED,
+        OverworldEG: IsAllowed::ALLOWED,
+        Misslotting: IsAllowed::ALLOWED,
+        HeraPot: IsAllowed::ALLOWED,
+        HookShopping: IsAllowed::ALLOWED,
+        LayerDisparity: IsAllowed::ALLOWED,
+        OverworldSwimmyG: IsAllowed::UNSPECIFIED,
+        TransitionCorruption: IsAllowed::DISALLOWED,
+        UnderworldClipping: IsAllowed::ALLOWED,
+    };
 }
 
-#[allow(non_upper_case_globals)]
-pub(crate) static NMGRules: Ruleset = Ruleset {
-    SaveAndQuit: IsAllowed::DISALLOWED,
-    FakeFlippers: IsAllowed::ALLOWED,
-    BombJump: IsAllowed::ALLOWED,
-    ItemDash: IsAllowed::ALLOWED,
-    SpookyAction: IsAllowed::ALLOWED,
-    OverworldClipping: IsAllowed::DISALLOWED,
-    OverworldMirrorWrap: IsAllowed::DISALLOWED,
-    OverworldYBA: IsAllowed::DISALLOWED,
-    SuperSpeed: IsAllowed::ALLOWED,
-    OverworldEG: IsAllowed::DISALLOWED,
-    Misslotting: IsAllowed::DISALLOWED
-};
 
 #[derive(Copy, Clone, PartialEq, Debug, Serialize)]
 pub(crate) enum IsAllowed {
     ALLOWED,
     DISALLOWED,
+    UNSPECIFIED,
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]

@@ -1,4 +1,8 @@
+
 {% extends "base" %}
+{% block pagename %}
+Weekly Ruleset
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
@@ -6,7 +10,7 @@
 {% endblock %}
 
 {% block body_content %}
-<div class="container mx-auto w-2/5">
+<div class="container mx-auto max-w-3xl w-4/5">
     <div class="text-2xl mx-auto text-center">
 
             <p>
