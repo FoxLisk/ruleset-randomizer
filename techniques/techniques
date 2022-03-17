@@ -1,23 +1,36 @@
 SaveAndQuit
 BombJump
-SpookyAction
+SilverlessGanon
 
 SuperSpeed
 FakeFlippers
 ItemDash
+AncillaOverload
 
+Hover
+HammerJump
+
+DoorStateExtension
+DiverDown
+
+OverworldBunnyRevival
 HeraPot
 HookShopping
 
 OverworldEG
 OverworldClipping
-OverworldMirrorWrap
+OverworldMirrorGlitches
 OverworldYBA
+OverworldDeathHole
 OverworldSwimmyG
 
 UnderworldClipping
 
-TransitionCorruption
+UnderworldYBA
+UnderworldDeathHole
+SomariaTransitionCorruption
+DoorJukes
+
 Misslotting
 
 LayerDisparity

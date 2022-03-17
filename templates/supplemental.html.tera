@@ -1,0 +1,29 @@
+{% extends "base" %}
+{% block pagename %}
+Supplemental Rules
+{% endblock %}
+
+{% block body_content %}
+<div class="container mx-auto max-w-3xl w-4/5">
+    <h3 class="text-xl text-center">
+        My rulings on some non-randomized techniques
+    </h3>
+    <div class="container outline outline-2 outline-sky-100 rounded p-1 divide-y divide-sky-50 mt-1">
+        <div id="holdpls">
+            {% for rule in rules %}
+                <div class="flex flex-row border-t-2 bg-zinc-300 rounded">
+                    <div class="basis-1/2 border-r-2 rounded pl-1.5 ">
+                        {{ rule.0 }}
+                    </div>
+                    <div class="
+                        basis-1/2 rounded pl-1.5
+                        {% if rule.1 == "ALLOWED" %} bg-teal-300 {% else %} bg-red-300 {% endif %}"
+                        >
+                            {{ rule.1 }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

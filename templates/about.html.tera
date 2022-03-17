@@ -1,0 +1,50 @@
+{% extends "base" %}
+{% block pagename %}
+About
+{% endblock %}
+
+
+{% block body_content %}
+<div class="container mx-auto max-w-3xl w-4/5">
+    <h2 class="text-2xl mx-auto text-center">
+About
+    </h2>
+    <div class="outline outline-2 outline-sky-100 rounded p-1 divide-y divide-sky-50 mt-1">
+        <div>
+            <h3 class="text-xl">
+                What Is This?
+            </h3>
+            <p class="indent-2 mb-1">
+            This is the Ruleset Randomizer for A Link to the Past. Various glitches and techniques have their legality
+            determined randomly. There is a new ruleset each Sunday.
+            </p>
+        </div>
+        <div>
+            <h3 class="text-xl mt-3">
+                How Do I Play?
+            </h3>
+            <p class="indent-2 mb-1">
+            My intention is to try routing All Dungeons or perhaps Any% under whatever ruleset gets rolled and then try
+            running it. You should too! It'll be fun! Maybe!
+            </p>
+        </div>
+        <div>
+            <h3 class="text-xl mt-3">
+                What Are These Rules?
+            </h3>
+            <p class="indent-2 mb-1">
+            Yeah I should write that up. For now just bug me on Discord (id below, DMs open) or ask in
+            <a href="https://discord.gg/8cskCK4" class="underline text-emerald-900">the main ALttP Discord</a>.
+        </div>
+        <div>
+            <h3 class="text-xl mt-3">
+                What About XYZ?
+            </h3>
+            <p class="indent-2 mb-1">
+                You are free to make up your own mind or consult with others about what seems most fun!
+                I have <a href="/supplemental" class="underline text-emerald-900">a list of rules</a> that are not randomized, but there will probably
+                still be things I missed.
+        </div>
+    </div>
+</div>
+{% endblock %}

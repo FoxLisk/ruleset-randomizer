@@ -18,6 +18,7 @@ use chrono::{DateTime, Offset, TimeZone, Datelike, Date, Weekday, Month};
 use rand::SeedableRng;
 use rocket::response::Redirect;
 use rocket::serde::json::Json;
+use std::collections::HashMap;
 
 fn month_from_u32(w: u32) -> Month {
     match w {
@@ -39,6 +40,7 @@ fn month_from_u32(w: u32) -> Month {
 
 
 const STATIC_SUFFIXES: [&str; 8] = [&"js", &"css", &"png", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
+
 
 #[derive(Serialize)]
 struct EmptyContext {}
@@ -76,6 +78,55 @@ async fn statics(file: PathBuf, _asset: StaticAsset) -> Option<NamedFile> {
     NamedFile::open(p).await.ok()
 }
 
+#[get("/favicon.ico")]
+async fn favicon() -> Option<NamedFile> {
+    NamedFile::open("static/favicon.ico").await.ok()
+
+}
+
+// TODO: combine these static-ish-pages routes into one
+
+#[get("/about")]
+async fn about() -> Template {
+    let mut context: HashMap<String, String> = Default::default();
+    context.insert("active_tab".to_string(), "about".to_string());
+    Template::render("about", context)
+}
+
+#[derive(Serialize)]
+struct SupplementalContext {
+    active_tab: String,
+    rules: Vec<(String, IsAllowed)>,
+}
+
+#[get("/supplemental")]
+async fn supplemental() -> Template {
+    let rules  = vec![
+        ("Spooky Action".to_string(), IsAllowed::ALLOWED),
+        ("Torch Glitch".to_string(), IsAllowed::ALLOWED),
+        ("Block Clips".to_string(), IsAllowed::ALLOWED),
+        ("Big Bomb Dupe".to_string(), IsAllowed::ALLOWED),
+        ("Water Walk".to_string(), IsAllowed::ALLOWED),
+        ("Houlihan".to_string(), IsAllowed::ALLOWED),
+        ("Medallion Cancel".to_string(), IsAllowed::ALLOWED),
+
+        ("Super Bunny".to_string(), IsAllowed::ALLOWED),
+        ("Dungeon Revival".to_string(), IsAllowed::ALLOWED),
+        ("Surfing Bunny".to_string(), IsAllowed::ALLOWED),
+        ("Bunny Pocket".to_string(), IsAllowed::ALLOWED),
+        ("UnBunnyBeam".to_string(), IsAllowed::ALLOWED),
+
+        ("Arbitrary Code Execution".to_string(), IsAllowed::DISALLOWED),
+
+    ];
+    let c = SupplementalContext {
+        active_tab: "supplemental".to_string(),
+        rules,
+    };
+    Template::render("supplemental", c)
+}
+
+
 #[get("/upload")]
 async fn upload_form() -> Template {
     Template::render("submit_weights", EMPTY_CONTEXT)
@@ -103,18 +154,25 @@ struct WeeklyRuleset<'a> {
     week_of: String,
     ruleset: &'a Ruleset,
     technique_names: &'static [&'static str],
+    active_tab: String,
 }
 
 fn get_weekly_ruleset() -> Ruleset {
     let rt = RulesetTemplate {
         SaveAndQuit: TemplateState::PERCENT(20),
-        FakeFlippers: TemplateState::PERCENT(95),
-        BombJump: TemplateState::PERCENT(95),
+        FakeFlippers: TemplateState::PERCENT(98),
+        BombJump: TemplateState::PERCENT(98),
+        SilverlessGanon: TemplateState::PERCENT(99),
         ItemDash: TemplateState::PERCENT(95),
-        SpookyAction: TemplateState::STATIC(IsAllowed::ALLOWED),
+        AncillaOverload: TemplateState::PERCENT(95),
+        Hover: TemplateState::PERCENT(85),
+        HammerJump: TemplateState::PERCENT(98),
+        DoorStateExtension: TemplateState::PERCENT(33),
+        DiverDown: TemplateState::PERCENT(33),
+        OverworldBunnyRevival: TemplateState::PERCENT(80),
         HeraPot: TemplateState::PERCENT(20),
         OverworldClipping: TemplateState::PERCENT(10),
-        OverworldMirrorWrap: TemplateState::PERCENT(10),
+        OverworldMirrorGlitches: TemplateState::PERCENT(10),
         OverworldYBA: TemplateState::PERCENT(10),
         SuperSpeed: TemplateState::PERCENT(95),
         OverworldEG: TemplateState::PERCENT(5),
@@ -122,9 +180,13 @@ fn get_weekly_ruleset() -> Ruleset {
         HookShopping: TemplateState::PERCENT(10),
         LayerDisparity: TemplateState::STATIC(IsAllowed::DISALLOWED),
         OverworldSwimmyG: TemplateState::PERCENT(10),
-        TransitionCorruption: TemplateState::PERCENT(3),
         UnderworldClipping: TemplateState::PERCENT(5),
 
+        UnderworldYBA: TemplateState::PERCENT(2),
+        UnderworldDeathHole: TemplateState::PERCENT(2),
+        SomariaTransitionCorruption: TemplateState::PERCENT(2),
+        OverworldDeathHole: TemplateState::PERCENT(50),
+        DoorJukes: TemplateState::PERCENT(2)
     };
     let now = chrono::offset::Utc::now();
     let last_sunday = most_recent_sunday(now.date());
@@ -145,7 +207,9 @@ async fn weekly() -> Template {
         week_of: format!("{} {}, {}", month_from_u32(last_sunday.month()).name(), last_sunday.day(), last_sunday.year()),
         ruleset: &r,
         technique_names: &TECHNIQUE_NAMES,
+        active_tab: "weekly".to_string()
     };
+
 
     Template::render("weekly_ruleset", rc)
 }
@@ -188,7 +252,16 @@ fn build_rocket(
     rocket::build()
         .mount(
             "/",
-            rocket::routes![hello, upload_form, upload, weekly, root, comparisons],
+            rocket::routes![
+            hello,
+            // upload_form,
+            // upload,
+            weekly,
+            root,
+            comparisons,
+            about,
+            supplemental,
+            favicon],
         )
         .mount("/static", rocket::routes![statics])
         .attach(Template::fairing())

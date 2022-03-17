@@ -19,8 +19,34 @@
         <div class="hidden sm:block sm:ml-6">
           <div class="flex space-x-6">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-            <a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Weekly</a>
-
+            <a href="/weekly"
+                class="
+                px-3 py-2 text-white rounded-md text-sm font-medium
+                {% if active_tab == 'weekly' %}
+                    bg-gray-600
+                {% else %}
+                    bg-gray-900
+                {% endif %}
+                "
+                >Weekly</a>
+            <a href="/about"
+                class="text-white px-3 py-2 rounded-md text-sm font-medium
+                {% if active_tab == 'about' %}
+                    bg-gray-600
+                {% else %}
+                    bg-gray-900
+                {% endif %}
+                "
+                >About</a>
+            <a href="/supplemental"
+                class="text-white px-3 py-2 rounded-md text-sm font-medium
+                {% if active_tab == 'supplemental' %}
+                    bg-gray-600
+                {% else %}
+                    bg-gray-900
+                {% endif %}
+                "
+                >Rules</a>
 {#
             <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Upload</a>
 #}
@@ -31,11 +57,11 @@
   </div>
 </nav>
 </div>
-<div>
-{% block body_content %}
-{% endblock %}
+<div id="main_content" class="pb-10">
+    {% block body_content %}
+    {% endblock %}
 </div>
-<div class="bg-gray-800 fixed w-full bottom-0 h-8 max-h-8">
+<div id="footer" class="bg-gray-800 fixed w-full bottom-0 h-8 max-h-8">
     <div class="container flex flex-row justify-between w-2/3 mx-auto text-slate-300 h-full">
         <div class="flex h-full max-h-full max-w-full">
           <img
