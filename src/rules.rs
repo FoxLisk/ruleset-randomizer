@@ -34,7 +34,6 @@ lazy_static! {
         HammerJump: IsAllowed::ALLOWED,
         Hover: IsAllowed::ALLOWED,
         OverworldBunnyRevival: IsAllowed::UNSPECIFIED,
-        OverworldDeathHole: IsAllowed::UNSPECIFIED,
         OverworldMirrorGlitches: IsAllowed::DISALLOWED,
         SomariaTransitionCorruption: IsAllowed::DISALLOWED,
         UnderworldDeathHole: IsAllowed::DISALLOWED,
@@ -66,7 +65,6 @@ lazy_static! {
         HammerJump: IsAllowed::ALLOWED,
         Hover: IsAllowed::ALLOWED,
         OverworldBunnyRevival: IsAllowed::ALLOWED,
-        OverworldDeathHole: IsAllowed::ALLOWED,
         OverworldMirrorGlitches: IsAllowed::ALLOWED,
         SomariaTransitionCorruption: IsAllowed::DISALLOWED,
         UnderworldDeathHole: IsAllowed::DISALLOWED,
@@ -98,7 +96,6 @@ lazy_static! {
         HammerJump: IsAllowed::ALLOWED,
         Hover: IsAllowed::ALLOWED,
         OverworldBunnyRevival: IsAllowed::ALLOWED,
-        OverworldDeathHole: IsAllowed::ALLOWED,
         OverworldMirrorGlitches: IsAllowed::ALLOWED,
         SomariaTransitionCorruption: IsAllowed::ALLOWED,
         UnderworldDeathHole: IsAllowed::ALLOWED,
@@ -131,7 +128,6 @@ lazy_static! {
         HammerJump: IsAllowed::ALLOWED,
         Hover: IsAllowed::ALLOWED,
         OverworldBunnyRevival: IsAllowed::ALLOWED,
-        OverworldDeathHole: IsAllowed::ALLOWED,
         OverworldMirrorGlitches: IsAllowed::ALLOWED,
         SomariaTransitionCorruption: IsAllowed::ALLOWED,
         UnderworldDeathHole: IsAllowed::ALLOWED,
@@ -150,7 +146,7 @@ pub(crate) enum IsAllowed {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub(crate) enum TemplateState {
     STATIC(IsAllowed),
-    PERCENT(u16),
+    CHANCE_PER_THOUSAND(u16),
     USE_DEFAULT,
 }
 
@@ -170,8 +166,8 @@ impl TemplateState {
         } else if let Some(m) = PERCENT_WEIGHT_PATTERN.captures(&*user_input) {
             match m[1].parse::<u16>() {
                 Ok(w) => {
-                    if (0..=100).contains(&w) {
-                        Some(Self::PERCENT(w))
+                    if (0..=1000).contains(&w) {
+                        Some(Self::CHANCE_PER_THOUSAND(w))
                     } else {
                         None
                     }
@@ -345,11 +341,11 @@ mod test {
         );
 
         assert_eq!(
-            Some(TemplateState::PERCENT(69)),
+            Some(TemplateState::CHANCE_PER_THOUSAND(69)),
             TemplateState::_maybe_from_user_input("69".to_lowercase())
         );
         assert_eq!(
-            Some(TemplateState::PERCENT(69)),
+            Some(TemplateState::CHANCE_PER_THOUSAND(69)),
             TemplateState::_maybe_from_user_input("69%".to_lowercase())
         );
     }
@@ -380,7 +376,7 @@ mod test {
         let (mut parsed, extras) = parse_weights(ui).unwrap();
         assert!(extras.is_none());
         assert_eq!(
-            TemplateState::PERCENT(69),
+            TemplateState::CHANCE_PER_THOUSAND(69),
             parsed.remove("FakeFlippers").unwrap()
         );
     }
@@ -393,7 +389,7 @@ mod test {
         let (mut parsed, extras) = parse_weights(ui).unwrap();
         assert_eq!(vec!["unused".to_string()], extras.unwrap());
         assert_eq!(
-            TemplateState::PERCENT(69),
+            TemplateState::CHANCE_PER_THOUSAND(69),
             parsed.remove("FakeFlippers").unwrap()
         );
     }
@@ -428,7 +424,7 @@ weights:
         assert!(parsed.is_ok(), "Failed to parse yaml: {}", parsed.unwrap_err());
         let p = parsed.unwrap();
         assert_eq!("hello", p.name);
-        assert_eq!(TemplateState::PERCENT(40), *p.weights.get("OverworldClipping").unwrap());
+        assert_eq!(TemplateState::CHANCE_PER_THOUSAND(40), *p.weights.get("OverworldClipping").unwrap());
 
     }
 
@@ -446,33 +442,33 @@ weights:
     #[test]
     fn test_apply_rule_with_rng() {
         let rt = RulesetTemplate {
-            FakeFlippers: TemplateState::PERCENT(50),
+            FakeFlippers: TemplateState::CHANCE_PER_THOUSAND(50),
             OverworldClipping: TemplateState::USE_DEFAULT,
         };
 
         let mut rng = SmallRng::seed_from_u64(1);
-        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng));
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::CHANCE_PER_THOUSAND(40), &mut rng));
 
 
         let mut rng2 = SmallRng::seed_from_u64(2);
-        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng2));
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::CHANCE_PER_THOUSAND(40), &mut rng2));
 
         let mut rng3 = SmallRng::seed_from_u64(3);
-        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng3));
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::CHANCE_PER_THOUSAND(40), &mut rng3));
 
 
         let mut rng4 = SmallRng::seed_from_u64(4);
-        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng4));
+        assert_eq!(IsAllowed::DISALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::CHANCE_PER_THOUSAND(40), &mut rng4));
 
         let mut rng5 = SmallRng::seed_from_u64(500);
-        assert_eq!(IsAllowed::ALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::PERCENT(40), &mut rng5));
+        assert_eq!(IsAllowed::ALLOWED, rt.apply_rule_with_rng(&IsAllowed::DISALLOWED, &TemplateState::CHANCE_PER_THOUSAND(40), &mut rng5));
     }
 
 
     #[test]
     fn test_apply_with_rng() {
         let rt = RulesetTemplate {
-            FakeFlippers: TemplateState::PERCENT(50),
+            FakeFlippers: TemplateState::CHANCE_PER_THOUSAND(50),
             OverworldClipping: TemplateState::USE_DEFAULT,
         };
 

@@ -40,9 +40,9 @@ impl RulesetTemplate {
     pub(crate) fn apply_rule_with_rng<R: Rng>(&self, default: &IsAllowed, rule: &TemplateState, rng: &mut R) -> IsAllowed {
         match rule {
             TemplateState::STATIC(i) => i.clone(),
-            TemplateState::PERCENT(p) => {
+            TemplateState::CHANCE_PER_THOUSAND(p) => {
 
-                let roll = rng.gen_ratio(*p as u32, 100);
+                let roll = rng.gen_ratio(*p as u32, 1000);
                 if roll {
                     IsAllowed::ALLOWED
                 } else {
@@ -66,9 +66,9 @@ impl RulesetTemplate {
     fn apply_rule(&self, default: &IsAllowed, rule: &TemplateState) -> IsAllowed {
         match rule {
             TemplateState::STATIC(i) => i.clone(),
-            TemplateState::PERCENT(p) => {
+            TemplateState::CHANCE_PER_THOUSAND(p) => {
                 let roll = {
-                    rand::thread_rng().gen_range(0u16..100)
+                    rand::thread_rng().gen_range(0u16..1000)
                 };
                 if *p < roll {
                     IsAllowed::ALLOWED

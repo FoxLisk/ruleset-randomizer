@@ -110,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 for (let d of document.querySelectorAll('.rule-row')) {
-
                     let rule_name = d.dataset.name,
                         allowed_in_comparison = comp[rule_name],
                         allowed_in_comparee = d.querySelector('.comparison-target').dataset.allowed,
@@ -129,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     d.querySelector('.comparison-slot').classList.remove('hidden');
                 }
-
                 indicate_active_comparison_button(comp_name);
             });
         });
