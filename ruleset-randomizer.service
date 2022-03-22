@@ -2,8 +2,8 @@
 Description=RulesetRandomizer
 
 [Service]
-StandardOutput="/var/log/ruleset-randomizer.log"
-StandardError="/var/log/ruleset-randomizer.log"
+StandardOutput=append:/var/log/ruleset-randomizer.log
+StandardError=append:/var/log/ruleset-randomizer.log
 WorkingDirectory=/opt/ruleset-randomizer
 ExecStart=/opt/ruleset-randomizer/target/debug/ruleset-randomizer
 
