@@ -1,24 +1,26 @@
 mod rules;
 mod techniques;
 
-use rocket::{Rocket, Build, Request};
-use rocket_dyn_templates::Template;
-use std::path::{PathBuf, Path};
+use crate::rules::{
+    InputWeights, IsAllowed, MGRules, NMGRules, NoEGRules, RMGRules, TemplateState,
+};
+use crate::techniques::{Ruleset, RulesetTemplate, TECHNIQUE_NAMES};
+use chrono::{Date, DateTime, Datelike, Month, Offset, TimeZone, Weekday};
+use rand::rngs::SmallRng;
+use rand::SeedableRng;
+use rocket::form::{Form, FromForm};
 use rocket::fs::{NamedFile, TempFile};
 use rocket::request::{FromRequest, Outcome};
-use rocket::{get, post};
-use serde_yaml;
-use crate::rules::{InputWeights, IsAllowed, NMGRules, RMGRules, NoEGRules, MGRules, TemplateState};
-use std::fs::read_to_string;
-use rocket::form::{Form, FromForm};
-use serde::Serialize;
-use crate::techniques::{Ruleset, RulesetTemplate, TECHNIQUE_NAMES};
-use rand::rngs::SmallRng;
-use chrono::{DateTime, Offset, TimeZone, Datelike, Date, Weekday, Month};
-use rand::SeedableRng;
 use rocket::response::Redirect;
 use rocket::serde::json::Json;
+use rocket::{get, post};
+use rocket::{Build, Request, Rocket};
+use rocket_dyn_templates::Template;
+use serde::Serialize;
+use serde_yaml;
 use std::collections::HashMap;
+use std::fs::read_to_string;
+use std::path::{Path, PathBuf};
 
 fn month_from_u32(w: u32) -> Month {
     match w {
@@ -34,13 +36,15 @@ fn month_from_u32(w: u32) -> Month {
         10 => Month::October,
         11 => Month::November,
         12 => Month::December,
-        _ => {panic!("Illegal month")}
+        _ => {
+            panic!("Illegal month")
+        }
     }
 }
 
-
-const STATIC_SUFFIXES: [&str; 8] = [&"js", &"css", &"png", &"mp3", &"html", &"jpg", &"ttf", &"otf"];
-
+const STATIC_SUFFIXES: [&str; 8] = [
+    &"js", &"css", &"png", &"mp3", &"html", &"jpg", &"ttf", &"otf",
+];
 
 #[derive(Serialize)]
 struct EmptyContext {}
@@ -81,7 +85,6 @@ async fn statics(file: PathBuf, _asset: StaticAsset) -> Option<NamedFile> {
 #[get("/favicon.ico")]
 async fn favicon() -> Option<NamedFile> {
     NamedFile::open("static/favicon.ico").await.ok()
-
 }
 
 // TODO: combine these static-ish-pages routes into one
@@ -101,7 +104,7 @@ struct SupplementalContext {
 
 #[get("/supplemental")]
 async fn supplemental() -> Template {
-    let rules  = vec![
+    let rules = vec![
         ("Spooky Action".to_string(), IsAllowed::ALLOWED),
         ("Torch Glitch".to_string(), IsAllowed::ALLOWED),
         ("Block Clips".to_string(), IsAllowed::ALLOWED),
@@ -109,15 +112,15 @@ async fn supplemental() -> Template {
         ("Water Walk".to_string(), IsAllowed::ALLOWED),
         ("Houlihan".to_string(), IsAllowed::ALLOWED),
         ("Medallion Cancel".to_string(), IsAllowed::ALLOWED),
-
         ("Super Bunny".to_string(), IsAllowed::ALLOWED),
         ("Dungeon Revival".to_string(), IsAllowed::ALLOWED),
         ("Surfing Bunny".to_string(), IsAllowed::ALLOWED),
         ("Bunny Pocket".to_string(), IsAllowed::ALLOWED),
         ("UnBunnyBeam".to_string(), IsAllowed::ALLOWED),
-
-        ("Arbitrary Code Execution".to_string(), IsAllowed::DISALLOWED),
-
+        (
+            "Arbitrary Code Execution".to_string(),
+            IsAllowed::DISALLOWED,
+        ),
     ];
     let c = SupplementalContext {
         active_tab: "supplemental".to_string(),
@@ -125,7 +128,6 @@ async fn supplemental() -> Template {
     };
     Template::render("supplemental", c)
 }
-
 
 #[get("/upload")]
 async fn upload_form() -> Template {
@@ -190,45 +192,42 @@ fn get_weekly_ruleset() -> Ruleset {
     let last_sunday = most_recent_sunday(now.date());
 
     let mut rng = SmallRng::seed_from_u64(1 + last_sunday.num_days_from_ce() as u64);
-    let mut r =rt.apply_with_rng(&NMGRules, &mut rng);
+    let mut r = rt.apply_with_rng(&NMGRules, &mut rng);
     r.name = "Weekly".to_string();
     r
 }
 
 #[get("/weekly")]
 async fn weekly() -> Template {
-
     let now = chrono::offset::Utc::now();
     let last_sunday = most_recent_sunday(now.date());
     let r = get_weekly_ruleset();
     let rc = WeeklyRuleset {
-        week_of: format!("{} {}, {}", month_from_u32(last_sunday.month()).name(), last_sunday.day(), last_sunday.year()),
+        week_of: format!(
+            "{} {}, {}",
+            month_from_u32(last_sunday.month()).name(),
+            last_sunday.day(),
+            last_sunday.year()
+        ),
         ruleset: &r,
         technique_names: &TECHNIQUE_NAMES,
-        active_tab: "weekly".to_string()
+        active_tab: "weekly".to_string(),
     };
-
 
     Template::render("weekly_ruleset", rc)
 }
 
-
 #[derive(FromForm)]
 struct Upload<'f> {
-    upload: TempFile<'f>
+    upload: TempFile<'f>,
 }
 
 #[post("/upload", data = "<form>")]
-async fn upload(mut form: Form<Upload<'_>>)  {
+async fn upload(mut form: Form<Upload<'_>>) {
     println!("{:?}", form.upload);
     let c = match &form.upload {
-        TempFile::File { path, .. } => {
-
-            read_to_string(path).unwrap()
-        }
-        TempFile::Buffered { content } => {
-            content.to_string()
-        }
+        TempFile::File { path, .. } => read_to_string(path).unwrap(),
+        TempFile::Buffered { content } => content.to_string(),
     };
     // form.upload.persist_to("uploads/blah").await;
     println!("Uploaded file contents: {}", c);
@@ -236,8 +235,13 @@ async fn upload(mut form: Form<Upload<'_>>)  {
 
 #[get("/comparisons")]
 async fn comparisons() -> Json<Vec<Ruleset>> {
-    Json(vec!(NMGRules.clone(), RMGRules.clone(), NoEGRules.clone(), MGRules.clone(), get_weekly_ruleset()))
-
+    Json(vec![
+        NMGRules.clone(),
+        RMGRules.clone(),
+        NoEGRules.clone(),
+        MGRules.clone(),
+        get_weekly_ruleset(),
+    ])
 }
 
 #[get("/world")]
@@ -245,26 +249,25 @@ fn hello() -> String {
     "Hello, world!".to_string()
 }
 
-fn build_rocket(
-) -> Rocket<Build> {
+fn build_rocket() -> Rocket<Build> {
     rocket::build()
         .mount(
             "/",
             rocket::routes![
-            hello,
-            // upload_form,
-            // upload,
-            weekly,
-            root,
-            comparisons,
-            about,
-            supplemental,
-            favicon],
+                hello,
+                // upload_form,
+                // upload,
+                weekly,
+                root,
+                comparisons,
+                about,
+                supplemental,
+                favicon
+            ],
         )
         .mount("/static", rocket::routes![statics])
         .attach(Template::fairing())
 }
-
 
 #[rocket::main]
 async fn main() {
@@ -272,14 +275,14 @@ async fn main() {
     let mut t = InputWeights {
         name: "hi".to_string(),
         defaults: "NMGRules".to_string(),
-        weights: Default::default()
+        weights: Default::default(),
     };
 
-    t.weights.insert("FakeFlippers".to_string(), "false".to_string());
+    t.weights
+        .insert("FakeFlippers".to_string(), "false".to_string());
     println!("{}", serde_yaml::to_string(&t).unwrap());
 
     let rocket = build_rocket();
     let ignited = rocket.ignite().await.unwrap();
     ignited.launch().await.unwrap();
 }
-
