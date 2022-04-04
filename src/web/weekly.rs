@@ -142,6 +142,7 @@ async fn render_past_ruleset(id: i32) -> Result<Template, NotFound<String>> {
     let mut p = saved_weeklies_path();
     p.push(format!("{}.json", id));
     let r = get_saved_ruleset(p).map_err(|s| NotFound(s))?;
+    println!("Rendering ruleset");
     Ok(Template::render("historical_ruleset", Ctx {
         active_tab: "history".to_string(),
         ruleset: r.ruleset,

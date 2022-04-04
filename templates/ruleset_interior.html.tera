@@ -1,0 +1,20 @@
+{% for name in technique_names %}
+    <div class="flex flex-row border-t-2 bg-zinc-300 rounded">
+       <div class="basis-1/2 border-r-2 rounded pl-1.5 ">
+           {{ name }}
+       </div>
+       <div
+           class="rule-row basis-1/2 rounded pl-1.5 {% if ruleset[name] == "ALLOWED" %} bg-teal-300 {% else %} bg-red-300 {% endif %}"
+           data-name="{{ name }}">
+           <div class="flex flex-row">
+               <div class="basis-1/2 hidden comparison-slot">
+                   <span class="allowed"></span>
+                   <span>-></span>
+               </div>
+               <div class="basis-1/2 comparison-target" data-allowed="{{ ruleset[name] }}">
+                   {{ ruleset[name] }}
+               </div>
+           </div>
+       </div>
+   </div>
+{% endfor %}
