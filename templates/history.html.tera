@@ -7,10 +7,10 @@ History
 {% block body_content %}
 <div class="container mx-auto max-w-3xl w-4/5">
     <ol class="pt-2">
-        {% for fi in files %}
+        {% for r in rulesets %}
         <li>
-            <a href="/history/{{ fi.id }}" class="underline text-emerald-900">
-                {{ fi.display_name }}
+            <a href="/history/{{ r.id }}" class="underline text-emerald-900">
+                {{ r.name }}
             </a>
         </li>
         {% endfor %}

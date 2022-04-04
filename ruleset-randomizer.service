@@ -6,7 +6,8 @@ StandardOutput=append:/var/log/ruleset-randomizer.log
 StandardError=append:/var/log/ruleset-randomizer.log
 WorkingDirectory=/opt/ruleset-randomizer
 ExecStart=/opt/ruleset-randomizer/target/debug/ruleset-randomizer
-Environment="RULESETS_PATH=/opt/efs/rulesets"
+Environment="RULESETS_PATH=/opt/efs/ruleset-randomizer/rulesets"
+Environment="DATABASE_PATH=/opt/efs/ruleset-randomizer/db"
 
 [Install]
 WantedBy=multi-user.target
