@@ -20,7 +20,9 @@ use serde_yaml;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
-
+use sqlx::SqlitePool;
+use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::migrate::{MigrateError, Migrator};
 
 
 #[derive(Serialize)]
@@ -96,6 +98,23 @@ fn build_rocket() -> Rocket<Build> {
     r
 }
 
+async fn get_pool() -> Result<SqlitePool, sqlx::Error> {
+    let sqlite_db_path = std::env::var("DATABASE_PATH").unwrap_or("db/test.db3".to_string());
+    let p = Path::new(&sqlite_db_path);
+    std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+    // use a SqliteConnectOptions instead of a hardcoded queryparam?
+    let path_with_params = format!("sqlite://{}?mode=rwc", sqlite_db_path);
+    SqlitePoolOptions::new()
+        .max_connections(12)
+        .connect(&path_with_params)
+        .await
+}
+
+async fn run_migrations(pool: &SqlitePool) -> Result<(), MigrateError> {
+    let migrator = Migrator::new(Path::new("migrations")).await?;
+    migrator.run(pool).await
+}
+
 #[rocket::main]
 async fn main() {
     println!("Hello, world!");
@@ -109,7 +128,16 @@ async fn main() {
         .insert("FakeFlippers".to_string(), "false".to_string());
     println!("{}", serde_yaml::to_string(&t).unwrap());
 
-    let rocket = build_rocket();
+    let pool = get_pool().await.unwrap();
+    match run_migrations(&pool).await {
+        Ok(_) => {},
+        Err(e) => {
+            println!("Migration error: {:?}", e);
+            panic!();
+        }
+    }
+    let rocket = build_rocket()
+        .manage(pool);
     let ignited = rocket.ignite().await.unwrap();
     ignited.launch().await.unwrap();
 }
