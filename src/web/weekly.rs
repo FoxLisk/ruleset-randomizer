@@ -3,6 +3,7 @@ use crate::techniques::{Ruleset, RulesetTemplate, TECHNIQUE_NAMES};
 use chrono::{Date, Datelike, Month, NaiveDate, TimeZone, Utc};
 use rand::rngs::SmallRng;
 use rocket::http::ext::IntoCollection;
+use rocket::response::status::NotFound;
 use rocket::{get, Build, Rocket};
 use rocket_dyn_templates::Template;
 use serde::{Deserialize, Serialize};
@@ -10,7 +11,6 @@ use std::collections::HashMap;
 use std::env::var;
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use rocket::response::status::NotFound;
 
 fn month_from_u32(w: u32) -> Month {
     match w {
@@ -143,12 +143,15 @@ async fn render_past_ruleset(id: i32) -> Result<Template, NotFound<String>> {
     p.push(format!("{}.json", id));
     let r = get_saved_ruleset(p).map_err(|s| NotFound(s))?;
     println!("Rendering ruleset");
-    Ok(Template::render("historical_ruleset", Ctx {
-        active_tab: "history".to_string(),
-        ruleset: r.ruleset,
-        name: r.name,
-        technique_names: r.technique_names,
-    }))
+    Ok(Template::render(
+        "historical_ruleset",
+        Ctx {
+            active_tab: "history".to_string(),
+            ruleset: r.ruleset,
+            name: r.name,
+            technique_names: r.technique_names,
+        },
+    ))
 }
 
 #[get("/history")]
