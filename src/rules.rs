@@ -4,6 +4,9 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use rand::rngs::SmallRng;
+use chrono::{TimeZone, Date, Datelike};
+use rand::SeedableRng;
 // use rand::{SeedableRng, RngCore, Rng};
 
 lazy_static! {
@@ -136,7 +139,7 @@ lazy_static! {
 }
 
 
-#[derive(Copy, Clone, PartialEq, Debug, Serialize)]
+#[derive(Copy, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) enum IsAllowed {
     ALLOWED,
     DISALLOWED,
@@ -286,6 +289,54 @@ pub(crate) fn parse_user_input(yaml: String) -> Result<MungedInputWeights, UserI
     }
 
 }
+
+
+pub(crate) fn get_weekly_ruleset() -> Ruleset {
+    let rt = RulesetTemplate {
+        SaveAndQuit: TemplateState::CHANCE_PER_THOUSAND(200),
+        FakeFlippers: TemplateState::CHANCE_PER_THOUSAND(980),
+        BombJump: TemplateState::CHANCE_PER_THOUSAND(980),
+        SilverlessGanon: TemplateState::CHANCE_PER_THOUSAND(990),
+        ItemDash: TemplateState::CHANCE_PER_THOUSAND(950),
+        AncillaOverload: TemplateState::CHANCE_PER_THOUSAND(950),
+        Hover: TemplateState::CHANCE_PER_THOUSAND(850),
+        HammerJump: TemplateState::CHANCE_PER_THOUSAND(980),
+        DoorStateExtension: TemplateState::CHANCE_PER_THOUSAND(330),
+        DiverDown: TemplateState::CHANCE_PER_THOUSAND(330),
+        OverworldBunnyRevival: TemplateState::CHANCE_PER_THOUSAND(800),
+        HeraPot: TemplateState::CHANCE_PER_THOUSAND(200),
+        OverworldClipping: TemplateState::CHANCE_PER_THOUSAND(100),
+        OverworldMirrorGlitches: TemplateState::CHANCE_PER_THOUSAND(100),
+        OverworldYBA: TemplateState::CHANCE_PER_THOUSAND(100),
+        SuperSpeed: TemplateState::CHANCE_PER_THOUSAND(950),
+        OverworldEG: TemplateState::CHANCE_PER_THOUSAND(50),
+        Misslotting: TemplateState::CHANCE_PER_THOUSAND(50),
+        HookShopping: TemplateState::CHANCE_PER_THOUSAND(100),
+        OverworldSwimmyG: TemplateState::CHANCE_PER_THOUSAND(100),
+        UnderworldClipping: TemplateState::CHANCE_PER_THOUSAND(50),
+        UnderworldYBA: TemplateState::CHANCE_PER_THOUSAND(30),
+        UnderworldDeathHole: TemplateState::CHANCE_PER_THOUSAND(30),
+        SomariaTransitionCorruption: TemplateState::CHANCE_PER_THOUSAND(30),
+        DoorJukes: TemplateState::CHANCE_PER_THOUSAND(20),
+        LayerDisparity: TemplateState::STATIC(IsAllowed::DISALLOWED),
+    };
+    let now = chrono::offset::Utc::now();
+    let last_sunday = most_recent_sunday(now.date());
+
+    let mut rng = SmallRng::seed_from_u64(1 + last_sunday.num_days_from_ce() as u64);
+    let mut r = rt.apply_with_rng(&NMGRules, &mut rng);
+    r.name = "Weekly".to_string();
+    r
+}
+
+
+pub(crate) fn most_recent_sunday<TZ: TimeZone>(mut d: Date<TZ>) -> Date<TZ> {
+    while d.weekday() != chrono::Weekday::Sun {
+        d = d.pred();
+    }
+    d
+}
+
 
 mod test {
     use super::TemplateState;

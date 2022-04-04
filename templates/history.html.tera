@@ -1,0 +1,20 @@
+{% extends "base" %}
+{% block pagename %}
+History
+{% endblock %}
+
+
+{% block body_content %}
+<div class="container mx-auto max-w-3xl w-4/5">
+    <ol class="pt-2">
+        {% for fi in files %}
+        <li>
+            <a href="/history/{{ fi.id }}" class="underline text-emerald-900">
+                {{ fi.display_name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ol>
+
+</div>
+{% endblock %}

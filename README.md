@@ -19,3 +19,7 @@ dev version with the <script> tag live in dev.
 # TODO
 
 make techniques into a richer data structure, so I can generate valid rulesets and such from it
+
+make it monthly?
+
+add randomized goals?
