@@ -1,7 +1,6 @@
-
 {% extends "base" %}
 {% block pagename %}
-Weekly Ruleset
+Ruleset Details
 {% endblock %}
 
 {% block scripts %}
@@ -14,11 +13,8 @@ Weekly Ruleset
     <div class="text-2xl mx-auto text-center">
 
             <p>
-              Ruleset for the week of
-            </p>
-            <p>
-             {{ week_of }}
-            </p>
+              Ruleset {{ name }}
+              <p>
 
     </div>
     {% include "ruleset" %}
